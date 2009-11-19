@@ -1,0 +1,5 @@
+#!/bin/bash
+rm cli_weathereport
+gcc weathereport.c -Wall -lcurl -o cli_weathereport
+chmod +x cli_weathereport
+./cli_weathereport "tianjin"
