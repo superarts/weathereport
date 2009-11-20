@@ -3,10 +3,7 @@
 int main(int argc, char** argv)
 {
 	char	format_url_woeid[] = FORMAT_URL_WOEID;
-	//char	format_url_weather[] = "http://xml.weather.yahoo.com/forecastrss/%s_f.xml";
 	char	format_url_weather[] = FORMAT_URL_WEATHER;
-	//char	filename_woeid[SIZEOF_DAT];
-	//char	filename_weather[SIZEOF_DAT];
 	char	filename_cache[SIZEOF_CACHE];
 	char	today[SIZEOF_TODAY];
 	char* 	url_woeid;
@@ -32,44 +29,22 @@ int main(int argc, char** argv)
 	{
 		get_today(today);
 		sprintf(filename_cache, FORMAT_CACHE_NAME, today, city);
-#ifdef ENABLE_MEMORY_CHECK
-	printf("MEMORY: allocating content_weather\n");
-#endif
 		content_weather = alloc_from_file(filename_cache);
 		printf("Loading from cache:\n\n%s\n", content_weather);
 		free(content_weather);
+		free(city);
 		
 		return 0;
 	}
 
 	printf("No cache file found.\nFetching data of '%s', please wait...\n", argv[1]);
 
-	//	get woeid
-#ifdef ENABLE_MEMORY_CHECK
-	printf("MEMORY: allocating url_woeid\n");
-#endif
+	//	fetch woeid
 	url_woeid = (char*)malloc(strlen(format_url_woeid) + strlen(city));
 	sprintf(url_woeid, format_url_woeid, city);
-	//	printf("Fetching WOEID...\n");
-#ifdef ENABLE_MEMORY_CHECK
-	printf("MEMORY: allocating content_woeid\n");
-#endif
 	content_woeid = alloc_httpget(HOST_YAHOO_WOEID, url_woeid);
-	//	curlget version
-/*
-	sprintf(filename_woeid, FORMAT_DAT_WOEID, getpid());
-#ifndef OFFLINE_TEST
-	curl_download(url_woeid, filename_woeid);
-#endif
-#ifndef OFFLINE_TEST
-	content_woeid = alloc_from_file(filename_woeid);
-#else
-	content_woeid = alloc_from_file("woeid.txt");
-#endif
-*/
-#ifdef ENABLE_MEMORY_CHECK
-	printf("MEMORY: allocating woeid\n");
-#endif
+
+	//	parse woeid
 	woeid = alloc_string_between(content_woeid, WOEID_HEAD, WOEID_TAIL);
 	if (woeid == NULL)
 	{
@@ -77,34 +52,13 @@ int main(int argc, char** argv)
 				content_woeid);
 		exit(2);
 	}
-	//	printf("Got WOEID: %s\n", woeid);
 
-	//	get weather forecast
-#ifdef ENABLE_MEMORY_CHECK
-	printf("MEMORY: allocating url_weather\n");
-#endif
+	//	fetch forecast
 	url_weather = (char*)malloc(strlen(format_url_weather) + strlen(woeid));
 	sprintf(url_weather, format_url_weather, woeid);
-	//	printf("got weather url: %s\n", url_weather);
-	//	printf("Fetching weather info...\n");
-#ifdef ENABLE_MEMORY_CHECK
-	printf("MEMORY: allocating content_weather\n");
-#endif
 	content_weather = alloc_httpget(HOST_YAHOO_WEATHER, url_weather);
-/*
-	sprintf(filename_weather, FORMAT_DAT_WEATHER, getpid());
-#ifndef OFFLINE_TEST
-	curl_download(url_weather, filename_weather);
-#endif
-#ifndef OFFLINE_TEST
-	content_weather = alloc_from_file(filename_weather);
-#else
-	content_weather = alloc_from_file("forecast.txt");
-#endif
-*/
-#ifdef ENABLE_MEMORY_CHECK
-	printf("MEMORY: allocating forecast\n");
-#endif
+
+	//	parse forecast
 	forecast = alloc_string_between(content_weather, WEATHER_HEAD, WEATHER_TAIL);
 	if (forecast == NULL)
 	{
@@ -172,7 +126,6 @@ char* alloc_city_uri(char* s)
 			index += 3;
 		}
 	}
-	//	printf("get city uri %li/%lu: %s\n", strlen(ret), sizeof(ret), ret);
 
 	return ret;
 }
@@ -211,7 +164,6 @@ char* alloc_from_file(char* filename)
 	if (fp == NULL)
 	{
 		printf("ERROR: cannot read from file '%s'\n", filename);
-		//	return NULL;
 		exit(2);
 	}
 
