@@ -1,7 +1,7 @@
 BUILD
 
 cd ./source
-./m ("cli_weathereport tianjin" will be called for testing.)
+./m ('cli_weathereport "new york"' will be called for testing.)
 
 The current revision is tested under Mac OS X 10.6.2.
 
@@ -17,20 +17,33 @@ TEST CASES
 
 cd ./source
 php ../test/stress.php
-*1. 10,000 times testing. Takes 56 seconds on my computer. Cache mode enabled.
-*2. Above 80 seconds if cache mode is disabled.
+*1. 10,000 times testing. Takes 56 seconds on my computer. Same city & cache mode enabled.
+*2. Above 80 seconds if cache mode is disabled (same city & date).
 
 MACROS
 
-DISABLE_CACHE:	uncomment to disable cache files. 
-OFFLINE_TEST:	uncomment to enable offline test (doesn't fetch data online).
+DISABLE_CACHE:	uncomment to disable cache files.
 
 TODO
 
-enable space support, e.g. 'new york'
-unlink data files
-use access and lock to check cache existence
+Find more memory leaks.
+Improve coding style.
+Use access and lock to check cache existence to improve performance.
+Remove curlget from Makefile.
 
 MAINTENANCE
 
 It is recommended to add a cron job to remove the outdated cache files (and the downloaded data files, before the unlink feature is added).
+
+HISTORY
+
+Revision 3
+Fixed a leak.
+Split the code into several modules.
+Replaced the module curlget with httpget, a light-weight http client based on TCP.
+Improved performance by avoiding save data.
+Added some comments.
+Added a simple Makefile.
+
+Revision 2
+The first rough version. Functions initially implemented.

@@ -1,5 +1,7 @@
 #!/bin/bash
-rm cli_weathereport
-gcc weathereport.c -Wall -lcurl -o cli_weathereport
+# rm cli_weathereport
+# gcc weathereport.c -Wall -lcurl -o cli_weathereport
+make clean
+make
 chmod +x cli_weathereport
-./cli_weathereport "tianjin"
+./cli_weathereport "new york"
