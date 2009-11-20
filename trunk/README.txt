@@ -27,13 +27,15 @@ TODO
 Move the new test case into the ./test directory.
 Find more memory leaks (checked with valgrind since rev 5).
 Improve coding style.
-Use access and lock to check cache existence to improve performance.
 
 MAINTENANCE
 
 It is recommended to add a cron job to remove the outdated cache files (and the downloaded data files, before the unlink feature is added).
 
 HISTORY
+
+Revision 8
+Added a "access" version to check cache existance. However, both the access version and the fopen version take about 26 seconds to perform the 10,000 stress test, so it will be removed in the next release.
 
 Revision 7
 Added a new test case at ./source/stress.
