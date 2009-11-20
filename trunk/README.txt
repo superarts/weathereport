@@ -26,16 +26,18 @@ DISABLE_CACHE:	uncomment to disable cache files.
 
 TODO
 
-Find more memory leaks.
+Find more memory leaks (checked with valgrind since rev 5).
 Improve coding style.
 Use access and lock to check cache existence to improve performance.
-Remove curlget from Makefile.
 
 MAINTENANCE
 
 It is recommended to add a cron job to remove the outdated cache files (and the downloaded data files, before the unlink feature is added).
 
 HISTORY
+
+Revision 6
+Removed curlget.h from weathereport.h, which was forgotten in the last commit.
 
 Revision 5
 Fixed a leak.
