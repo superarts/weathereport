@@ -1,7 +1,7 @@
 #ifndef __WEATHEREPORT_H
 #define __WEATHEREPORT_H
 
-#define DISABLE_CACHE
+//#define DISABLE_CACHE
 
 #include <stdio.h>
 #include <stdlib.h>
