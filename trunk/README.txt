@@ -15,16 +15,15 @@ HOW TO USE
 
 TEST CASES
 
-cd ./source
+cd ./test
 ./stress
 
 MACROS
 
-DISABLE_CACHE:	uncomment to disable cache files.
+DISABLE_CACHE:	uncomment to disable cache files, i.e. always fetching data from yahoo.
 
 TODO
 
-Move the new test case into the ./test directory.
 Find more memory leaks (checked with valgrind since rev 5).
 Improve coding style.
 
@@ -33,6 +32,10 @@ MAINTENANCE
 It is recommended to add a cron job to remove the outdated cache files (and the downloaded data files, before the unlink feature is added).
 
 HISTORY
+
+Revision 9
+Removed the access version (see rev 8).
+Moved the "stress" test case into the ./test directory.
 
 Revision 8
 Added a "access" version to check cache existance. However, both the access version and the fopen version take about 26 seconds to perform the 10,000 stress test, so it will be removed in the next release.
