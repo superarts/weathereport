@@ -9,7 +9,6 @@
 #include <time.h>
 #include <stdbool.h>
 
-#include "curlget.h"
 #include "httpget.h"
 
 #define SIZEOF_TODAY		9
