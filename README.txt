@@ -37,7 +37,12 @@ It is recommended to add a cron job to remove the outdated cache files (and the 
 
 HISTORY
 
-Revision 3
+Revision 5
+Fixed a leak.
+Code cleanup.
+Removed the curlget module from Makefile.
+
+Revision 4
 Fixed a leak.
 Split the code into several modules.
 Replaced the module curlget with httpget, a light-weight http client based on TCP.
@@ -45,5 +50,11 @@ Improved performance by avoiding save data.
 Added some comments.
 Added a simple Makefile.
 
-Revision 2
+Revision 3
 The first rough version. Functions initially implemented.
+
+Revision 2
+Initial checkout & commit.
+
+Revision 1
+Repository created.

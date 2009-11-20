@@ -17,8 +17,6 @@ char* alloc_httpget(char* host, char* path)
 	char*	ret;
 	int		ret_pos;
 
-	//	printf("httpget: %s/%s\n", host, path);
-
 	//	prepare socket connection
 	sock = create_tcp_socket();
 	ip = get_ip(host);
