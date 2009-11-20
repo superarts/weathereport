@@ -16,9 +16,7 @@ HOW TO USE
 TEST CASES
 
 cd ./source
-php ../test/stress.php
-*1. 10,000 times testing. Takes 56 seconds on my computer. Same city & cache mode enabled.
-*2. Above 80 seconds if cache mode is disabled (same city & date).
+./stress
 
 MACROS
 
@@ -26,6 +24,7 @@ DISABLE_CACHE:	uncomment to disable cache files.
 
 TODO
 
+Move the new test case into the ./test directory.
 Find more memory leaks (checked with valgrind since rev 5).
 Improve coding style.
 Use access and lock to check cache existence to improve performance.
@@ -35,6 +34,9 @@ MAINTENANCE
 It is recommended to add a cron job to remove the outdated cache files (and the downloaded data files, before the unlink feature is added).
 
 HISTORY
+
+Revision 7
+Added a new test case at ./source/stress.
 
 Revision 6
 Removed curlget.h from weathereport.h, which was forgotten in the last commit.
