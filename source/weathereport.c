@@ -214,6 +214,8 @@ bool cache_exists(char* city)
 {
 	char	today[SIZEOF_TODAY];
 	char	filename[SIZEOF_CACHE];
+	FILE*	fp;
+	long	pos;
 
 #ifdef DISABLE_CACHE
 	return false;
@@ -221,18 +223,6 @@ bool cache_exists(char* city)
 
 	get_today(today);
 	sprintf(filename, FORMAT_CACHE_NAME, today, city);
-
-#if 1
-	if (access(filename, F_OK) == 0)
-		return true;
-	else
-		return false;
-#endif
-
-	//	fopen version
-#if 1
-	FILE*	fp;
-	long	pos;
 
 	fp = fopen(filename, "rb");
 	if (fp != NULL)
@@ -246,5 +236,4 @@ bool cache_exists(char* city)
 	}
 
 	return false;
-#endif
 }
