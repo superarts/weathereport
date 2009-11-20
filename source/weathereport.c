@@ -1,49 +1,12 @@
-#define CURL_STATICLIB
-
-//#define DISABLE_CACHE
-//#define OFFLINE_TEST
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <curl/curl.h>
-#include <curl/types.h>
-#include <curl/easy.h>
-#include <string.h>
-#include <time.h>
-#include <stdbool.h>
-#include <unistd.h>
-
-#define SIZEOF_TODAY		9
-#define SIZEOF_CITY			256
-#define SIZEOF_DAT			32
-#define SIZEOF_CACHE		(SIZEOF_TODAY + SIZEOF_CITY + 6)
-#define FORMAT_DAT_WOEID 	"woeid_%i.txt"
-#define FORMAT_DAT_WEATHER	"forecast_%i.txt"
-#define FORMAT_CACHE_NAME	"%s_%s.txt"
-#define FORMAT_URL_WOEID	"http://where.yahooapis.com/v1/places.q('%s')?appid=uG20.p3V34G.ZXi8DEfWmCAwJd886uhZMmdR2CiKMBALacJSIOn84P3mzITQbw7aK7u_gQ--"
-#define FORMAT_URL_WEATHER	"weather.yahooapis.com/forecastrss?w=%s&u=c";
-#define WOEID_HEAD			"<woeid>"
-#define WOEID_TAIL			"</woeid>"
-#define WEATHER_HEAD		"<BR /><b>Forecast:</b><BR />\n"
-#define WEATHER_TAIL		"<br />\n<br />\n<a href=\"http://us.rd.yahoo.com/dailynews/rss/weather/"
-
-long	get_filesize(FILE* fp);
-size_t	write_data(void *ptr, size_t size, size_t nmemb, FILE *stream);
-void	curl_download(char* url, char* filename);
-void 	get_today(char* buf);
-
-char*	alloc_from_file(char* filename);
-char*	alloc_string_between(char* source, char* head, char* tail);
-void	format_weather(char* s);
-bool cache_exists(char* city);
+#include "weathereport.h"
 
 int main(int argc, char** argv)
 {
 	char	format_url_woeid[] = FORMAT_URL_WOEID;
 	//char	format_url_weather[] = "http://xml.weather.yahoo.com/forecastrss/%s_f.xml";
 	char	format_url_weather[] = FORMAT_URL_WEATHER;
-	char	filename_woeid[SIZEOF_DAT];
-	char	filename_weather[SIZEOF_DAT];
+	//char	filename_woeid[SIZEOF_DAT];
+	//char	filename_weather[SIZEOF_DAT];
 	char	filename_cache[SIZEOF_CACHE];
 	char	today[SIZEOF_TODAY];
 	char* 	url_woeid;
@@ -52,89 +15,166 @@ int main(int argc, char** argv)
 	char*	content_weather;
 	char*	woeid;
 	char*	forecast;
+	char*	city;
 
+	//	exit if city is not given
 	if (argc == 1)
 	{
 		printf("Usage: cli_weathereport CITY_NAME\n");
 		return 0;
 	}
 
-	if (cache_exists(argv[1]))
+	//	change space to %20, e.g. 'New York' -> 'New%20York'
+	city = alloc_city_uri(argv[1]);
+
+	//	read from cache instead of downloading if the city and date info already exist
+	if (cache_exists(city))
 	{
 		get_today(today);
-		sprintf(filename_cache, FORMAT_CACHE_NAME, today, argv[1]);
+		sprintf(filename_cache, FORMAT_CACHE_NAME, today, city);
+#ifdef ENABLE_MEMORY_CHECK
+	printf("MEMORY: allocating content_weather\n");
+#endif
 		content_weather = alloc_from_file(filename_cache);
 		printf("Loading from cache:\n\n%s\n", content_weather);
-
 		free(content_weather);
 		
 		return 0;
 	}
 
-	//	TODO: enable space support, e.g. 'new york'
-	printf("No cache file found.\nTarget: %s\n", argv[1]);
+	printf("No cache file found.\nFetching data of '%s', please wait...\n", argv[1]);
 
-	url_woeid = (char*)malloc(strlen(format_url_woeid) + strlen(argv[1]));
-	sprintf(url_woeid, format_url_woeid, argv[1]);
-	printf("Fetching WOEID...\n");
+	//	get woeid
+#ifdef ENABLE_MEMORY_CHECK
+	printf("MEMORY: allocating url_woeid\n");
+#endif
+	url_woeid = (char*)malloc(strlen(format_url_woeid) + strlen(city));
+	sprintf(url_woeid, format_url_woeid, city);
+	//	printf("Fetching WOEID...\n");
+#ifdef ENABLE_MEMORY_CHECK
+	printf("MEMORY: allocating content_woeid\n");
+#endif
+	content_woeid = alloc_httpget(HOST_YAHOO_WOEID, url_woeid);
+	//	curlget version
+/*
 	sprintf(filename_woeid, FORMAT_DAT_WOEID, getpid());
 #ifndef OFFLINE_TEST
 	curl_download(url_woeid, filename_woeid);
 #endif
+#ifndef OFFLINE_TEST
 	content_woeid = alloc_from_file(filename_woeid);
+#else
+	content_woeid = alloc_from_file("woeid.txt");
+#endif
+*/
+#ifdef ENABLE_MEMORY_CHECK
+	printf("MEMORY: allocating woeid\n");
+#endif
 	woeid = alloc_string_between(content_woeid, WOEID_HEAD, WOEID_TAIL);
 	if (woeid == NULL)
 	{
-		printf("ERROR: wrong woeid format, please check data file %s.\nExiting...\n",
-				filename_woeid);
-		exit(0);
+		printf("ERROR: wrong woeid format, please check the content below:\n%s\n",
+				content_woeid);
+		exit(2);
 	}
-	printf("Got WOEID: %s\n", woeid);
+	//	printf("Got WOEID: %s\n", woeid);
 
+	//	get weather forecast
+#ifdef ENABLE_MEMORY_CHECK
+	printf("MEMORY: allocating url_weather\n");
+#endif
 	url_weather = (char*)malloc(strlen(format_url_weather) + strlen(woeid));
 	sprintf(url_weather, format_url_weather, woeid);
 	//	printf("got weather url: %s\n", url_weather);
-	printf("Fetching weather info...\n");
+	//	printf("Fetching weather info...\n");
+#ifdef ENABLE_MEMORY_CHECK
+	printf("MEMORY: allocating content_weather\n");
+#endif
+	content_weather = alloc_httpget(HOST_YAHOO_WEATHER, url_weather);
+/*
 	sprintf(filename_weather, FORMAT_DAT_WEATHER, getpid());
 #ifndef OFFLINE_TEST
 	curl_download(url_weather, filename_weather);
 #endif
+#ifndef OFFLINE_TEST
 	content_weather = alloc_from_file(filename_weather);
+#else
+	content_weather = alloc_from_file("forecast.txt");
+#endif
+*/
+#ifdef ENABLE_MEMORY_CHECK
+	printf("MEMORY: allocating forecast\n");
+#endif
 	forecast = alloc_string_between(content_weather, WEATHER_HEAD, WEATHER_TAIL);
-	if (woeid == NULL)
+	if (forecast == NULL)
 	{
-		printf("ERROR: wrong woeid format, please check data file %s.\nExiting...\n",
-				filename_weather);
-		exit(0);
+		printf("ERROR: wrong forecast format, please check the content below:\n%s\n",
+				content_weather);
+		exit(2);
 	}
 	format_weather(forecast);
 	printf("Got forecast in 2 days:\n\n%s\n", forecast);
 
 #ifndef DISABLE_CACHE
+	//	write cache file as 'YYYYMMDD_CITYNAME.txt'
 	FILE*	fp;
 
 	get_today(today);
-	sprintf(filename_cache, FORMAT_CACHE_NAME, today, argv[1]);
+	sprintf(filename_cache, FORMAT_CACHE_NAME, today, city);
 	fp = fopen(filename_cache, "wb");
 	if (fp == NULL)
 	{
-		printf("ERROR: cannot write cache file '%s'\nExiting...\n", filename_cache);
-		return 0;
+		printf("ERROR: cannot write cache file '%s'\n", filename_cache);
+		exit(2);
 	}
 	fwrite(forecast, strlen(forecast), 1, fp);
 	fclose(fp);
 #endif
 
-	//	TODO: unlink data files
-	
+	//	free buffers
 	free(forecast);
 	free(content_weather);
 	free(url_weather);
 	free(woeid);
 	free(content_woeid);
 	free(url_woeid);
-	
+	free(city);
+
 	return 0;
+}
+
+char* alloc_city_uri(char* s)
+{
+	int		i;
+	int		count = 0;
+	int		index = 0;
+	char*	ret;
+
+	for (i = 0; i < strlen(s); i++)
+	{
+		if (s[i] == ' ')
+			count++;
+	}
+	ret = malloc(strlen(s) + i * 2);
+	ret[strlen(s) + i * 2] = '\0';
+	for (i = 0; i < strlen(s); i++)
+	{
+		if (s[i] != ' ')
+		{
+			ret[index] = s[i];
+			index++;
+		}
+		else
+		{
+			ret[index + 0] = '%';
+			ret[index + 1] = '2';
+			ret[index + 2] = '0';
+			index += 3;
+		}
+	}
+	//	printf("get city uri %li/%lu: %s\n", strlen(ret), sizeof(ret), ret);
+
+	return ret;
 }
 
 long get_filesize(FILE* fp)
@@ -148,40 +188,6 @@ long get_filesize(FILE* fp)
 	return ret;
 }
 
-size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream)
-{
-    size_t written;
-    written = fwrite(ptr, size, nmemb, stream);
-    return written;
-}
-
-void curl_download(char* url, char* filename)
-{
-    CURL*		curl;
-    FILE*		fp;
-    CURLcode	res;
-
-    curl = curl_easy_init();
-    if (curl)
-	{
-        fp = fopen(filename, "wb");
-		if (fp == NULL)
-		{
-			printf("ERROR: cannot write data file '%s'\nExiting...\n", filename);
-			return;
-		}
-
-        curl_easy_setopt(curl, CURLOPT_URL, url);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-        res = curl_easy_perform(curl);
-        curl_easy_cleanup(curl);
-        fclose(fp);
-    }
-
-    return;
-}
-
 void get_today(char* buf)
 {
 	time_t		now;
@@ -190,6 +196,7 @@ void get_today(char* buf)
 	now = time(NULL);
 	ts = localtime(&now);
 	strftime(buf, sizeof(buf), "%Y%m%d", ts);
+	buf[8] = '\0';
 
 	return;
 }
@@ -203,9 +210,9 @@ char* alloc_from_file(char* filename)
 	fp = fopen(filename, "rb");
 	if (fp == NULL)
 	{
-		printf("ERROR: cannot read from file '%s'\nExiting...\n", filename);
+		printf("ERROR: cannot read from file '%s'\n", filename);
 		//	return NULL;
-		exit(0);
+		exit(2);
 	}
 
 	filesize = get_filesize(fp);
