@@ -1,3 +1,6 @@
+Weathereport is an open source CLI application to get the weather forecast of a city in the next 2 days. It is divided into several modules, and to extend the features of this application, the same interface needs to be maintained in each module. For example, if you want to use another weather service other than Yahoo! Weather API, you need to implement a "char* alloc_forecast_from_your_weather_service(char* city)" function and use it to replace the old "yahoo_alloc_forecast" one in the main() function.
+
+
 BUILD
 
 cd ./source
@@ -5,33 +8,44 @@ cd ./source
 
 The current revision is tested under Mac OS X 10.6.2.
 
+
 DEPENDENCY
 
-libcurl (downloading weather data online.)
+GNU standard libs. (libcurl and "-lcurl" was needed in previous versions, however it cannot be used directly in the current revision because the interface has had been changed. See HISTORY for details.)
+
 
 HOW TO USE
 
 ./cli_weathereport CITY_NAME
+
 
 TEST CASES
 
 cd ./test
 ./stress
 
+
 MACROS
 
 DISABLE_CACHE:	uncomment to disable cache files, i.e. always fetching data from yahoo.
 
+
 TODO
 
-Find more memory leaks (checked with valgrind since rev 5).
-Improve coding style.
+Add more weather services.
+Add more command-line parameters.
+(Coding style and memory leaks are always important - check them in every revisions!)
+
 
 MAINTENANCE
 
-It is recommended to add a cron job to remove the outdated cache files (and the downloaded data files, before the unlink feature is added).
+It is recommended to add a cron job to remove the outdated cache files (or keep them as backup data if it's needed).
+
 
 HISTORY
+
+Revision 10
+Split weathereport.c into several modules.
 
 Revision 9
 Removed the access version (see rev 8).
