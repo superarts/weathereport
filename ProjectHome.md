@@ -1,0 +1,1 @@
+A command-line utility that gets recent weather report of a city. Based on GNU libraries only.
